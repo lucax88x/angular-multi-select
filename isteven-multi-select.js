@@ -578,19 +578,26 @@ angular.module( 'isteven-multi-select', ['ng'] ).directive( 'istevenMultiSelect'
             $scope.writeLabel = function( item, type ) {
                 
                 // type is either 'itemLabel' or 'buttonLabel'
-                var temp    = attrs[ type ].split( ' ' );                    
-                var label   = '';                
+                var template    = attrs[ type ];
+                var regex = /\{[^\}]*\}/g;
+                var keys = template.match(regex);
+                var result   = template;                
 
-                angular.forEach( temp, function( value, key ) {                    
-                    item[ value ] && ( label += '&nbsp;' + value.split( '.' ).reduce( function( prev, current ) {
-                        return prev[ current ]; 
-                    }, item ));        
+                angular.forEach( keys, function( value ) {       
+                    var key = value.slice(1, -1);             
+                    if(item[key]){
+                        var property = key.split( '.' ).reduce( function( prev, current ) {
+                            return prev[ current ]; 
+                        }, item );
+
+                        result = result.replace(value, property);
+                    }
                 });
                 
                 if ( type.toUpperCase() === 'BUTTONLABEL' ) {                    
-                    return label;
+                    return result;
                 }
-                return $sce.trustAsHtml( label );
+                return $sce.trustAsHtml( result );
             }                                
 
             // UI operations to show/hide checkboxes based on click event..
